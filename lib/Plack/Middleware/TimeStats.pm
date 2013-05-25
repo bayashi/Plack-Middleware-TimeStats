@@ -23,7 +23,7 @@ sub prepare_app {
 
     $self->callback(
         sub {
-            my ($stats, $env) = @_;
+            my ($stats, $env, $res) = @_;
             warn scalar($stats->report);
         }
     ) unless $self->callback;
@@ -49,7 +49,7 @@ sub call {
 
     $self->response_cb($res, sub {
         my $res = shift;
-        $self->callback->($env->{$self->psgix}, $env);
+        $self->callback->($env->{$self->psgix}, $env, $res);
         return;
     });
 }
