@@ -1,15 +1,57 @@
 package Plack::Middleware::TimeStats;
 use strict;
 use warnings;
-use Carp qw/croak/;
+use parent 'Plack::Middleware';
+use Plack::Util::Accessor qw/callback psgix option action/;
+use Devel::TimeStats;
 
 our $VERSION = '0.01';
 
-sub new {
-    my $class = shift;
-    my $args  = shift || +{};
+sub prepare_app {
+    my $self = shift;
 
-    bless $args, $class;
+    if ($self->psgix) {
+        $self->psgix('psgix.'. $self->psgix);
+    }
+    else {
+        $self->psgix('psgix.timestats');
+    }
+
+    $self->option(+{
+        percentage_decimal_precision => 2,
+    }) unless $self->option;
+
+    $self->callback(
+        sub {
+            my ($stats, $env) = @_;
+            warn scalar($stats->report);
+        }
+    ) unless $self->callback;
+}
+
+sub call {
+    my($self, $env) = @_;
+
+    $env->{$self->psgix} = Devel::TimeStats->new($self->option);
+
+    my $action = $self->action ? $self->action->($env) : $env->{PATH_INFO};
+
+    $env->{$self->psgix}->profile(
+        begin   => $action,
+        comment => '',
+    );
+
+    my $res = $self->app->($env);
+
+    $env->{$self->psgix}->profile(
+        end => $action,
+    );
+
+    $self->response_cb($res, sub {
+        my $res = shift;
+        $self->callback->($env->{$self->psgix}, $env);
+        return;
+    });
 }
 
 
@@ -19,17 +61,79 @@ __END__
 
 =head1 NAME
 
-Plack::Middleware::TimeStats - one line description
+Plack::Middleware::TimeStats - Plack Timing Statistics Middleware
 
 
 =head1 SYNOPSIS
 
-    use Plack::Middleware::TimeStats;
+    use Plack::Builder;
+
+    builder {
+        enable "TimeStats";
+
+        sub {
+            my $env = shift;
+            $env->{"psgix.timestats"}->profile("foo");
+            [ 200, [], ["OK"] ]
+        };
+    };
 
 
 =head1 DESCRIPTION
 
-Plack::Middleware::TimeStats is
+Plack::Middleware::TimeStats is the Plack middleware for getting a timing statistics.
+
+This module provides the default, put a timing statistics to STDERR, like below.
+
+    .--------+-----------+---------.
+    | Action | Time      | %       |
+    +--------+-----------+---------+
+    | /      | 0.000574s | 100.00% |
+    |  - foo | 0.000452s | 78.75%  |
+    '--------+-----------+---------'
+
+=head2 HOW TO GET A STATS IN YOUR APP
+
+You can get a timing profile by C<$env->{"psgix.timestats"}>. It's a L<Devel::TimeStats> object.
+
+    $env->{"psgix.timestats"}->profile("foo");
+
+Check more methods in document of L<Devel::TimeStats>.
+
+
+=head1 MIDDLEWARE OPTIONS
+
+Plack::Middleware::TimeStats has few options.
+
+=head2 callback
+
+Default is to output a stats result to STERR.
+
+=head2 psgix
+
+The key of psgix extension. Default is C<psgix.timestats>. You can NOT specify prefix C<psgix.>. It is required.
+
+    enable "TimeStats";                     # 'psgix.timestats'
+    enable "TimeStats", psgix => 'mystats'; # 'psgix.mystats'
+
+=head2 option
+
+C<option> passes through to Devel::TimeStats's constructor.
+
+=head2 action
+
+Default is C<PATH_INFO>. You can set this option as code reference.
+
+
+=head1 METHODS
+
+=over
+
+=item call
+
+=item prepare_app
+
+=back
 
 
 =head1 REPOSITORY
@@ -45,7 +149,7 @@ Dai Okabayashi E<lt>bayashi@cpan.orgE<gt>
 
 =head1 SEE ALSO
 
-L<Other::Module>
+L<Devel::TimeStats>
 
 
 =head1 LICENSE
