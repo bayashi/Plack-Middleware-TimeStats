@@ -58,7 +58,7 @@ use Plack::Middleware::TimeStats;
 
     };
 
-    note $stderr;
+    #note $stderr;
     like $stderr, qr!|\s+Action\s+|\s+Time\s+|\s+%\s+|!, 'header';
     like $stderr, qr!|\s+/baz\s+|!, '/';
     like $stderr, qr!|\s+- bar\s+|!, 'action';
