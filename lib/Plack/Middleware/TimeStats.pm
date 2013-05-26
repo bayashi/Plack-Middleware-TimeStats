@@ -83,7 +83,7 @@ Plack::Middleware::TimeStats - Plack Timing Statistics Middleware
 
 Plack::Middleware::TimeStats is the Plack middleware for getting a timing statistics.
 
-This module provides the default, put a timing statistics to STDERR, like below.
+This module provides the default, put a timing statistics to STDERR at the end of request, like below.
 
     .--------+-----------+---------.
     | Action | Time      | %       |
@@ -94,7 +94,7 @@ This module provides the default, put a timing statistics to STDERR, like below.
 
 =head2 HOW TO GET A STATS IN YOUR APP
 
-You can get a timing profile by C<$env->{"psgix.timestats"}>. It's a L<Devel::TimeStats> object.
+You can get a timing profile by C<$env->{"psgix.timestats"}>. It's a L<Devel::TimeStats> object. So you call C<profile> method with an action string, then stack a timing stats.
 
     $env->{"psgix.timestats"}->profile("foo");
 
@@ -103,24 +103,24 @@ Check more methods in document of L<Devel::TimeStats>.
 
 =head1 MIDDLEWARE OPTIONS
 
-Plack::Middleware::TimeStats has few options.
+This module has few options.
 
-=head2 callback
+=head2 callback : code reference
 
-Default is to output a stats result to STERR.
+Default is to output a stats result to STDERR.
 
-=head2 psgix
+=head2 psgix : string
 
 The key of psgix extension. Default is C<psgix.timestats>. You can NOT specify prefix C<psgix.>. It is required.
 
     enable "TimeStats";                     # 'psgix.timestats'
     enable "TimeStats", psgix => 'mystats'; # 'psgix.mystats'
 
-=head2 option
+=head2 option : hash reference
 
 C<option> passes through to Devel::TimeStats's constructor.
 
-=head2 action
+=head2 action : code reference
 
 Default is C<PATH_INFO>. You can set this option as code reference.
 
