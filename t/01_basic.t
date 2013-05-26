@@ -34,8 +34,34 @@ use Plack::Middleware::TimeStats;
     #note $stderr;
     like $stderr, qr!|\s+Action\s+|\s+Time\s+|\s+%\s+|!, 'header';
     like $stderr, qr!|\s+/\s+|!, '/';
-    like $stderr, qr!|\s+- foo\s+|!, 'foo';
+    like $stderr, qr!|\s+- foo\s+|!, 'action';
 }
 
+{
+    my $stderr = capture_stderr {
+
+        my $app = builder {
+            enable 'TimeStats';
+            sub {
+                my $env = shift;
+                $env->{'psgix.timestats'}->profile('bar');
+                [ 200, [], ['OK'] ];
+            };
+        };
+        my $cli = sub {
+                my $cb = shift;
+                my $res = $cb->(GET '/baz?hoge=1');
+                is $res->code, 200;
+                is $res->content, 'OK';
+        };
+        test_psgi $app, $cli;
+
+    };
+
+    note $stderr;
+    like $stderr, qr!|\s+Action\s+|\s+Time\s+|\s+%\s+|!, 'header';
+    like $stderr, qr!|\s+/baz\s+|!, '/';
+    like $stderr, qr!|\s+- bar\s+|!, 'action';
+}
 
 done_testing;
