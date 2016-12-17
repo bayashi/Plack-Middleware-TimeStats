@@ -43,12 +43,15 @@ sub call {
 
     my $res = $self->app->($env);
 
-    $env->{$self->psgix}->profile(
-        end => $action,
-    );
-
     $self->response_cb($res, sub {
         my $res = shift;
+
+        $env->{$self->psgix}->profile('end app');
+
+        $env->{$self->psgix}->profile(
+            end => $action,
+        );
+
         $self->callback->($env->{$self->psgix}, $env, $res);
         return;
     });
