@@ -46,8 +46,6 @@ sub call {
     $self->response_cb($res, sub {
         my $res = shift;
 
-        $env->{$self->psgix}->profile('end app');
-
         $env->{$self->psgix}->profile(
             end => $action,
         );
