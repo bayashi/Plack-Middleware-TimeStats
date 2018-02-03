@@ -140,7 +140,7 @@ Default is C<PATH_INFO>. You can set this option as code reference.
 =head1 REPOSITORY
 
 Plack::Middleware::TimeStats is hosted on github
-<http://github.com/bayashi/Plack-Middleware-TimeStats>
+L<http://github.com/bayashi/Plack-Middleware-TimeStats>
 
 
 =head1 AUTHOR
