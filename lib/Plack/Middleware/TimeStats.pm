@@ -95,7 +95,7 @@ This module provides the default, put a timing statistics to STDERR at the end o
 
 =head2 HOW TO GET A STATS IN YOUR APP
 
-You can get a timing profile by C<$env->{"psgix.timestats"}>. It's a L<Devel::TimeStats> object. So you call C<profile> method with an action string, then stack a timing stats.
+You can get a timing profile by C<< $env->{"psgix.timestats"} >>. It's a L<Devel::TimeStats> object. So you call C<profile> method with an action string, then stack a timing stats.
 
     $env->{"psgix.timestats"}->profile("foo");
 
