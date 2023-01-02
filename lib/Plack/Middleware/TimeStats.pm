@@ -5,7 +5,7 @@ use parent 'Plack::Middleware';
 use Plack::Util::Accessor qw/callback psgix option action/;
 use Devel::TimeStats;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 sub prepare_app {
     my $self = shift;
